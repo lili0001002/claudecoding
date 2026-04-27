@@ -1,0 +1,22 @@
+# Secrets and credentials
+.env
+.env.*
+*.pem
+*.key
+*token*
+*cookie*
+*secret*
+*password*
+
+# Local machine artifacts
+.claude/
+AppData/
+Temp/
+*.log
+*.output
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
