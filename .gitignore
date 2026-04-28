@@ -1,0 +1,38 @@
+# runtime data and local state
+data/
+logs/
+*.log
+*.pid
+*.sqlite
+*.db
+
+# secrets and local config
+.env
+.env.*
+*token*
+*secret*
+*credential*
+*.key
+*.pem
+
+# generated caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+node_modules/
+dist/
+build/
+
+# local backups created during hot fixes
+*.bak
+*.bak.*
+*.bak_*
+*~
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
