@@ -308,8 +308,9 @@
   var _imeQ       = '';
   var _imeReports = [];
   var _imePosts   = [];
+  var _imeStats   = {};
   var _imeFeedPg  = 1;
-  var _imePerPage = 20;
+  var _imePerPage = 30;
 
   function loadImeTab(){
     if(_imeLoaded) return;
@@ -319,6 +320,7 @@
 
     wrap.innerHTML =
       '<div class="ime2-root">'
+        +'<div class="ime2-overview" id="ime2Overview"><span>加载数据库视图...</span></div>'
         +'<div class="ime2-tabs-bar">'
           +'<div class="ime2-tabs" id="ime2Tabs"><span class="ime2-tab active" data-cat="">最新</span></div>'
           +'<div class="ime2-search-wrap"><input id="ime2Search" class="ime2-search" placeholder="🔍 搜索研报/帖子"></div>'
@@ -352,11 +354,20 @@
 
     // 并发加载全量数据
     Promise.all([
-      fetch('/api/ime-reports?limit=500').then(function(r){ return r.json(); }),
-      fetch('/api/ime-posts?limit=200').then(function(r){ return r.json(); })
+      fetch('/api/ime-reports?limit=12000').then(function(r){ return r.json(); }),
+      fetch('/api/ime-posts?limit=20000').then(function(r){ return r.json(); })
     ]).then(function(res){
       _imeReports = (res[0].items || []).map(function(r){ r._type = 'report'; return r; });
       _imePosts   = (res[1].items || []).map(function(p){ p._type = 'post';   return p; });
+      _imeStats   = {
+        reportsShown: _imeReports.length,
+        reportsTotal: res[0].total || _imeReports.length,
+        postsShown: _imePosts.length,
+        postsTotal: res[1].total || _imePosts.length,
+        updatedAt: res[0].updated_at || res[1].updated_at || '',
+        meta: res[0].meta || res[1].meta || {}
+      };
+      _imeRenderOverview();
       _imeBuildCatTabs();
       _imeRenderFeed();
     }).catch(function(){
@@ -376,12 +387,29 @@
     tabs.innerHTML = html;
   }
 
+  function _imeRenderOverview(){
+    var el = document.getElementById('ime2Overview');
+    if(!el) return;
+    var meta = _imeStats.meta || {};
+    var latestPost = meta.latest_post_time || '';
+    var latestReport = meta.latest_report_time || '';
+    el.innerHTML =
+      '<span class="ime2-ov-main">数据库视图</span>'
+      +'<span>研报 '+_fmtNum(_imeStats.reportsShown||0)+' / '+_fmtNum(_imeStats.reportsTotal||0)+'</span>'
+      +'<span>星球帖 '+_fmtNum(_imeStats.postsShown||0)+' / '+_fmtNum(_imeStats.postsTotal||0)+'</span>'
+      +'<span>附件 '+_fmtNum(meta.post_files_total||0)+'</span>'
+      +'<span>图片 '+_fmtNum(meta.post_images_total||0)+'</span>'
+      +'<span>链接 '+_fmtNum(meta.post_links_total||0)+'</span>'
+      +(latestReport ? '<span>最新分析 '+_fmtTime(latestReport)+'</span>' : '')
+      +(latestPost ? '<span>最新帖子 '+_fmtTime(latestPost)+'</span>' : '');
+  }
+
   function _imeGetFeed(){
     var all = [];
     _imeReports.forEach(function(r){
       if(_imeCat && r.category !== _imeCat) return;
       if(_imeQ){
-        var tx = ((r.file_name||'')+(r.s_one_liner||'')+(r.s_catalyst||'')+(r.category||'')).toLowerCase();
+        var tx = ((r.file_name||'')+(r.title_cn||'')+(r.s_one_liner||'')+(r.s_catalyst||'')+(r.category||'')+(r.source_hashtag||'')+(r.source_topic_id||'')).toLowerCase();
         if(tx.indexOf(_imeQ) === -1) return;
       }
       all.push(r);
@@ -389,14 +417,14 @@
     _imePosts.forEach(function(p){
       if(_imeCat && p.hashtag !== _imeCat) return;
       if(_imeQ){
-        var tx = ((p.title||'')+(p.text_preview||'')+(p.hashtag||'')).toLowerCase();
+        var tx = ((p.title||'')+(p.text_preview||'')+(p.hashtag||'')+(p.author_name||'')).toLowerCase();
         if(tx.indexOf(_imeQ) === -1) return;
       }
       all.push(p);
     });
     all.sort(function(a, b){
-      var ta = a.analyzed_at || a.create_time || '';
-      var tb = b.analyzed_at || b.create_time || '';
+      var ta = a.source_time || a.analyzed_at || a.create_time || '';
+      var tb = b.source_time || b.analyzed_at || b.create_time || '';
       return tb < ta ? -1 : tb > ta ? 1 : 0;
     });
     return all;
@@ -418,7 +446,7 @@
       var gi = start + i;
       if(item._type === 'report'){
         var cat = item.category ? '<span class="ime2-cat-tag">'+_esc(item.category)+'</span>' : '';
-        var dt  = _fmtTime(item.analyzed_at||'');
+        var dt  = _fmtTime(item.source_time || item.analyzed_at || '');
         // 中文标题优先：title_cn → s_one_liner → file_name
         var cnTitle = (item.title_cn || '').replace(/\*\*/g,'').trim()
                    || _cleanMd(item.s_one_liner||'').slice(0,80)
@@ -431,11 +459,18 @@
           titleHtml = '<div class="ime2-card-title" title="'+_esc(item.file_name||'')+'">'+_trunc(item.file_name||'', 46)+'</div>';
         }
         var srcBadge = _imeSrcBadge(item);
+        var reportBadges = '<div class="ime2-minirow">'
+          +(item.source_hashtag ? '<span>'+_esc(item.source_hashtag)+'</span>' : '')
+          +(item.text_length ? '<span>'+_fmtNum(item.text_length)+'字</span>' : '')
+          +(item.prompt_mode ? '<span>'+_esc(item.prompt_mode)+'</span>' : '')
+          +(item.source_topic_id ? '<span>星球源</span>' : '')
+          +'</div>';
         html += '<div class="ime2-card ime2-rc" data-gi="'+gi+'">'
           +'<div class="ime2-card-meta">'+cat+srcBadge+'<span class="ime2-ctype">研报</span>'
           +(item.download_url ? '<span class="ime2-card-dl-icon" title="可下载">📄</span>' : '')
           +'<span class="ime2-card-dt">'+dt+'</span></div>'
           +titleHtml
+          +reportBadges
           +(item.s_one_liner ? '<div class="ime2-card-summ">'+_esc(_cleanMd(item.s_one_liner))+'</div>' : '')
           +(item.s_action    ? '<div class="ime2-card-act">'+_esc(_cleanMd(item.s_action))+'</div>' : '')
           +'</div>';
@@ -460,11 +495,21 @@
         if(!postTitle && !bodyText && item.files && item.files.length){
           postTitle = item.files[0].name;
         }
+        var postBadges = '<div class="ime2-minirow">'
+          +'<span>附件 '+(item.file_count || (item.files||[]).length || 0)+'</span>'
+          +'<span>图片 '+(item.image_count || (item.images||[]).length || 0)+'</span>'
+          +'<span>链接 '+(item.link_count || (item.links||[]).length || 0)+'</span>'
+          +(item.likes_count ? '<span>赞 '+_fmtNum(item.likes_count)+'</span>' : '')
+          +(item.comments_count ? '<span>评 '+_fmtNum(item.comments_count)+'</span>' : '')
+          +(item.readers_count ? '<span>读 '+_fmtNum(item.readers_count)+'</span>' : '')
+          +(item.fetched_at ? '<span>抓取 '+_fmtTime(item.fetched_at)+'</span>' : '')
+          +'</div>';
         html += '<div class="ime2-card ime2-pc" data-gi="'+gi+'">'
           +'<div class="ime2-card-meta">'+ht+'<span class="ime2-ctype ime2-ctype-post">帖子</span>'
           +'<span class="ime2-card-author">'+_esc(item.author_name||'')+'</span>'
           +'<span class="ime2-card-dt">'+dt+'</span></div>'
           +(postTitle ? '<div class="ime2-card-title">'+_esc(_trunc(postTitle,70))+'</div>' : '')
+          +postBadges
           +(bodyText ? '<div class="ime2-card-body">'+_esc(_trunc(bodyText, 200))+'</div>' : '')
           +filesHtml
           +(item.images && item.images.length ? '<div class="ime2-card-imgs">'
@@ -738,6 +783,11 @@
   function _cleanMd(s){ return (s||'').replace(/\*\*/g,'').replace(/\*/g,''); }
   function _trunc(s, n){ return (s && s.length > n) ? s.slice(0, n)+'…' : (s||''); }
   function _esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function _fmtNum(n){
+    n = Number(n || 0);
+    if(n >= 10000) return (n / 10000).toFixed(n >= 100000 ? 0 : 1) + '万';
+    return String(n);
+  }
   function _fmtTime(raw){
     if(!raw) return '';
     var s = raw.replace('T',' ').replace(/\+.*$/,'');

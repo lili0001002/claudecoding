@@ -1241,16 +1241,19 @@ class Handler(BaseHTTPRequestHandler):
                     items = [r for r in items if
                              q in (r.get("file_name", "") or "").lower() or
                              q in (r.get("s_one_liner", "") or "").lower() or
-                             q in (r.get("s_catalyst", "") or "").lower()]
+                             q in (r.get("s_catalyst", "") or "").lower() or
+                             q in (r.get("source_hashtag", "") or "").lower()]
                 total = len(items)
                 if limit > 0:
                     result = {"total": total, "page": 1, "page_size": total,
                               "updated_at": payload.get("updated_at", ""),
+                              "meta": payload.get("meta", {}),
                               "items": items[:limit]}
                 else:
                     start  = (page - 1) * page_size
                     result = {"total": total, "page": page, "page_size": page_size,
                               "updated_at": payload.get("updated_at", ""),
+                              "meta": payload.get("meta", {}),
                               "items": items[start:start + page_size]}
             except FileNotFoundError:
                 result = {"total": 0, "page": 1, "page_size": page_size,
@@ -1267,8 +1270,10 @@ class Handler(BaseHTTPRequestHandler):
             return
         elif parsed.path == "/api/ime-posts":
             qs    = parse_qs(parsed.query)
-            limit = min(500, int(qs.get("limit", ["300"])[0]))
+            limit_raw = int(qs.get("limit", ["300"])[0])
+            limit = 0 if limit_raw <= 0 else min(20000, limit_raw)
             ht    = qs.get("hashtag", [""])[0]
+            q     = qs.get("q", [""])[0].strip().lower()
             try:
                 ime_path = os.path.join(os.path.dirname(__file__),
                                          "..", "data", "ime_posts.json")
@@ -1277,8 +1282,15 @@ class Handler(BaseHTTPRequestHandler):
                 items = payload.get("items", [])
                 if ht:
                     items = [p for p in items if p.get("hashtag", "") == ht]
+                if q:
+                    items = [p for p in items if
+                             q in (p.get("title", "") or "").lower() or
+                             q in (p.get("text_preview", "") or "").lower() or
+                             q in (p.get("hashtag", "") or "").lower() or
+                             q in (p.get("author_name", "") or "").lower()]
+                result_items = items if limit == 0 else items[:limit]
                 result = {"total": len(items), "updated_at": payload.get("updated_at", ""),
-                          "items": items[:limit]}
+                          "meta": payload.get("meta", {}), "items": result_items}
             except FileNotFoundError:
                 result = {"total": 0, "updated_at": "", "items": [], "error": "数据文件未找到"}
             except Exception as e:
