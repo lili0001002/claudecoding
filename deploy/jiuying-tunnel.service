@@ -1,0 +1,15 @@
+[Unit]
+Description=Cloudflare Tunnel for jiuying-web
+After=network-online.target jiuying-web.service
+Wants=network-online.target
+OnFailure=jiuying-alert@jiuying-tunnel.service
+
+[Service]
+Type=simple
+User=libowei
+ExecStart=/usr/bin/cloudflared tunnel --url http://localhost:8888 --no-autoupdate --logfile /home/libowei/server/jiuying/logs/cf_tunnel.log
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

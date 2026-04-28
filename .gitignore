@@ -1,6 +1,8 @@
 # runtime data and local state
 data/
 logs/
+_archive/
+_check_detail.py
 *.log
 *.pid
 *.sqlite

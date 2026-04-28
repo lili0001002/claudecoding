@@ -1,0 +1,15 @@
+[Unit]
+Description=久赢恒丰 Web Viewer
+After=network.target
+OnFailure=jiuying-alert@jiuying-web.service
+
+[Service]
+Type=simple
+User=libowei
+WorkingDirectory=/home/libowei/server/jiuying
+ExecStart=/home/libowei/server/venv/bin/python -m engine.web_viewer
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

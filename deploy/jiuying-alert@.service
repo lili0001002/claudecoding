@@ -1,0 +1,14 @@
+[Unit]
+Description=久赢恒丰 崩溃告警：%i 服务已停止
+# 此模板服务由 OnFailure= 触发，%i 为触发失败的服务名
+
+[Service]
+Type=oneshot
+User=libowei
+WorkingDirectory=/home/libowei/server/jiuying
+ExecStart=/home/libowei/server/venv/bin/python -c "\
+import sys; sys.path.insert(0, '.'); \
+from engine.notify import send_alert; \
+send_alert('%i 服务崩溃', 'systemd 检测到 %i 异常退出，已触发 OnFailure 告警。请检查日志：journalctl -u %i -n 50')"
+StandardOutput=append:/home/libowei/server/jiuying/logs/alert.log
+StandardError=append:/home/libowei/server/jiuying/logs/alert.log

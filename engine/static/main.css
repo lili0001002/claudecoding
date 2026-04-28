@@ -1,0 +1,319 @@
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue',sans-serif;background:#f0f2f5;color:#1a1a1a;min-height:100vh}
+a{text-decoration:none;color:inherit}
+
+/* ===== 顶栏 ===== */
+.topbar{background:#fff;padding:12px 20px 0;border-bottom:1px solid #e8e8e8;position:sticky;top:0;z-index:20;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.topbar-row{display:flex;align-items:baseline;gap:12px;padding-bottom:10px}
+.topbar-title{font-size:18px;font-weight:700;color:#1a1a1a}
+.topbar-meta{font-size:13px;color:#aaa}
+.tabs{display:flex;gap:0}
+.tab{padding:8px 16px;font-size:14px;color:#888;cursor:pointer;position:relative;white-space:nowrap;border-bottom:2px solid transparent;user-select:none;display:inline-flex;align-items:center;gap:5px}
+.tab.active{color:#1677ff;font-weight:600;border-bottom-color:#1677ff}
+.tab-cnt{font-size:11px;background:#f0f0f0;color:#999;border-radius:10px;padding:1px 6px;font-weight:400}
+.tab.active .tab-cnt{background:#e6f0ff;color:#1677ff}
+
+/* ===== 主内容区：双列网格 ===== */
+.main{padding:12px 16px 40px}
+.date-group{font-size:13px;font-weight:600;color:#1677ff;padding:14px 4px 6px;letter-spacing:.3px;border-bottom:1px solid #e0eaff;margin-bottom:8px}
+
+/* 题材卡片网格：桌面2列，手机1列 */
+.cards-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:700px){.cards-grid{grid-template-columns:1fr}}
+
+/* ===== 题材卡片（details） ===== */
+details.card{background:#fff;border-radius:10px;border:1px solid #e8e8e8;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+details.card[open]{border-color:#c8daff}
+summary.card-sum{list-style:none;display:flex;align-items:center;padding:12px 14px;cursor:pointer;gap:10px}
+summary.card-sum::-webkit-details-marker{display:none}
+summary.card-sum:active{background:#f9f9f9}
+.rank-num{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.rank-1{background:#e53935;color:#fff}
+.rank-2{background:#ff7043;color:#fff}
+.rank-3{background:#1976d2;color:#fff}
+.rank-n{background:#f0f0f0;color:#999}
+.card-info{flex:1;min-width:0}
+.card-name{font-size:14px;font-weight:700;color:#1a1a1a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.card-name:hover{color:#1677ff}
+/* ===== 全文弹窗 ===== */
+.fulltext-mask{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center;padding:24px}
+.fulltext-mask.show{display:flex}
+.fulltext-box{background:#fff;border-radius:14px;max-width:600px;width:100%;padding:24px 20px 16px;box-shadow:0 8px 32px rgba(0,0,0,.18);position:relative;max-height:80vh;overflow-y:auto}
+.fulltext-close{position:absolute;top:12px;right:14px;font-size:20px;color:#bbb;cursor:pointer;line-height:1;padding:4px}
+.fulltext-close:hover{color:#333}
+.fulltext-title{font-size:15px;font-weight:700;color:#1a1a1a;line-height:1.6;margin-bottom:6px;padding-right:24px}
+.fulltext-meta{font-size:12px;color:#aaa;margin-bottom:10px}
+.fulltext-detail{font-size:13px;color:#444;line-height:1.8;margin-top:10px;padding-top:10px;border-top:1px solid #f0f0f0}
+.fulltext-reason{font-size:13px;color:#555;line-height:1.7;margin-top:8px;padding:8px 10px;background:#f7f9ff;border-radius:6px;border-left:3px solid #1677ff}
+.fulltext-loading{font-size:12px;color:#ccc;padding:8px 0}
+.card-sub{font-size:11px;color:#aaa;margin-top:3px}
+.card-pct{font-size:15px;font-weight:700;flex-shrink:0;min-width:58px;text-align:right}
+.card-arrow{font-size:11px;color:#ccc;flex-shrink:0;transition:transform .18s}
+details.card[open] .card-arrow{transform:rotate(90deg)}
+
+/* ===== 股票展开面板：网格 ===== */
+.stocks-panel{background:#f7f9ff;border-top:1px solid #e0eaff;padding:8px}
+.stocks-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+@media(max-width:500px){.stocks-grid{grid-template-columns:repeat(2,1fr)}}
+.stk{background:#fff;border:1px solid #eee;border-radius:7px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center}
+.stk-left{}
+.stk-name{font-size:13px;font-weight:600;color:#1a1a1a}
+.stk-code{font-size:11px;color:#bbb;margin-top:1px}
+.stk-right{text-align:right}
+.stk-pct{font-size:13px;font-weight:700}
+.stk-price{font-size:11px;color:#bbb;margin-top:1px}
+
+/* ===== A股配色：上涨红，下跌绿 ===== */
+.up{color:#e53935}
+.dn{color:#26a69a}
+.flat{color:#aaa}
+
+/* ===== 详情页 ===== */
+.detail-nav{background:#fff;display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid #eee;position:sticky;top:0;z-index:20}
+.detail-nav a{font-size:20px;color:#1677ff;margin-right:12px;line-height:1}
+.detail-nav-title{font-size:16px;font-weight:700;flex:1;text-align:center;margin-right:32px}
+.detail-hero{background:#fff;padding:16px 20px;margin-bottom:8px}
+.detail-hero-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.detail-hero-name{font-size:18px;font-weight:700;color:#1a1a1a;flex:1;margin-right:12px;line-height:1.4}
+.detail-hero-pct{font-size:22px;font-weight:700;flex-shrink:0}
+.detail-hero-meta{font-size:13px;color:#aaa;margin-bottom:12px}
+.detail-stats{display:flex;background:#f7f9ff;border-radius:10px;overflow:hidden;border:1px solid #e0eaff}
+.stat-item{flex:1;text-align:center;padding:12px 8px;border-right:1px solid #e0eaff}
+.stat-item:last-child{border-right:none}
+.stat-val{font-size:16px;font-weight:700;color:#1a1a1a}
+.stat-label{font-size:11px;color:#aaa;margin-top:3px}
+.section-hd{padding:12px 20px 8px;font-size:12px;font-weight:600;color:#999;background:#f0f2f5;letter-spacing:.6px}
+.detail-stocks-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px 16px;background:#fff}
+@media(max-width:700px){.detail-stocks-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:480px){.detail-stocks-grid{grid-template-columns:repeat(2,1fr)}}
+.dstk{border:1px solid #eee;border-radius:8px;padding:10px 10px 8px;background:#fff}
+.dstk.top3{border-color:#ffd0cc;background:#fff8f8}
+.dstk-name{font-size:14px;font-weight:600;color:#1a1a1a}
+.dstk-code{font-size:11px;color:#bbb;margin-top:2px}
+.dstk-pct{font-size:15px;font-weight:700;margin-top:6px}
+.dstk-price{font-size:11px;color:#bbb;margin-top:1px}
+.tag-new{font-size:11px;color:#1677ff;background:#eef4ff;padding:2px 7px;border-radius:4px;display:inline-block}
+.tag-event{font-size:11px;color:#f57c00;background:#fff8ee;padding:2px 7px;border-radius:4px;display:inline-block}
+
+/* 大盘看板配色（其他地方进度指示符仍用） */
+.mkt-up{color:#e53935}.mkt-dn{color:#26a69a}.mkt-flat{color:#aaa}
+
+/* ===== 题材图谱 Tab ===== */
+.treepage{display:flex;height:calc(100vh - 90px);overflow:hidden}
+/* 左列：题材列表 */
+.tree-list{width:86px;flex-shrink:0;overflow-y:auto;background:#fff;border-right:1px solid #eee}
+.tree-list-item{padding:10px 6px;text-align:center;cursor:pointer;border-bottom:1px solid #f5f5f5;user-select:none;transition:background .15s}
+.tree-list-item.active{background:#fff3f2;border-right:3px solid #e53935}
+.tree-list-item.active .tli-name{color:#e53935}
+.tree-list-item.active .tli-pct{color:#e53935}
+.tli-name{font-size:12px;color:#1a1a1a;font-weight:600;line-height:1.3;word-break:break-all}
+.tli-pct{font-size:11px;color:#e53935;margin-top:3px;font-weight:700}
+.tli-pct.dn{color:#26a69a}
+.tli-hint{font-size:9px;color:#ccc;margin-top:4px;letter-spacing:0.5px}
+.tli-date{font-size:9px;color:#bbb;margin-top:3px}
+/* 中间：题材详情面板（宽屏自动展开，窄屏隐藏） */
+.tree-detail{display:none;width:300px;flex-shrink:0;overflow-y:auto;background:#fff;border-right:1px solid #eee;flex-direction:column}
+.tree-detail-hd{padding:12px 14px 8px;border-bottom:1px solid #f0f0f0;position:sticky;top:0;background:#fff;z-index:1}
+.tree-detail-name{font-size:15px;font-weight:700;color:#1a1a1a;line-height:1.4;margin-bottom:4px}
+.tree-detail-pct{font-size:13px;font-weight:700;margin-bottom:2px}
+.tree-detail-date{font-size:11px;color:#bbb}
+.tree-detail-body{padding:12px 14px;flex:1;overflow-y:auto}
+.tree-detail-section{margin-bottom:12px}
+.tree-detail-label{font-size:11px;color:#aaa;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.tree-detail-text{font-size:13px;color:#374151;line-height:1.7}
+.tree-detail-text p{margin:0 0 6px}
+.tree-detail-loading{padding:20px 14px;color:#ccc;font-size:12px}
+@media(min-width:900px){
+  .tree-detail{display:flex}
+  .tli-hint{display:none}
+}
+/* 列头行 */
+.vtree-col-hd{display:flex;align-items:center;padding:6px 14px;background:#fafafa;border-bottom:1px solid #f0f0f0;gap:8px;position:sticky;top:0;z-index:1}
+.vtree-col-hd-name{font-size:11px;color:#aaa;flex:1}
+.vtree-col-hd-code{font-size:11px;color:#aaa;flex-shrink:0}
+.vtree-col-hd-reason{font-size:11px;color:#aaa;flex:2}
+.vtree-col-hd-pct{font-size:11px;color:#aaa;flex-shrink:0;min-width:52px;text-align:right}
+/* 右侧：纵向树表格 */
+.tree-chart{flex:1;overflow:auto;background:#fff}
+.tree-loading{padding:40px;text-align:center;color:#ccc;font-size:13px}
+/* 纵向树表格 - 标题行+分组块 */
+.vtree{width:100%;background:#fff}
+/* 根节点标题行 */
+.vtree-root-hd{display:flex;align-items:center;padding:10px 14px;background:#fff3f2;border-bottom:2px solid #ffd0c0;gap:10px}
+.vtree-root-name{font-size:15px;font-weight:700;color:#e53935;flex:1}
+.vtree-root-pct{font-size:14px;font-weight:700;color:#e53935}
+/* 分组块 */
+.vtree-group{border-bottom:1px solid #f0ebe6;position:relative}
+.vtree-group:last-child{border-bottom:none}
+/* 分组标题行（padding-left 由 JS 按 depth 动态设置） */
+.vtree-group-hd{display:flex;align-items:center;padding:8px 14px;background:#fffaf6;border-bottom:1px solid #f5e8e0;gap:8px;cursor:pointer;user-select:none;position:relative}
+.vtree-group-hd:active{background:#fff3ec}
+/* 深层分组标题背景渐浅 */
+.vtree-group-hd[data-depth="1"]{background:#fffcf9}
+.vtree-group-hd[data-depth="2"]{background:#fefefe}
+.vtree-group-hd[data-depth="3"]{background:#fdfdfd}
+.vtree-group-name{font-size:13px;font-weight:700;color:#1a1a1a;flex:1}
+.vtree-group-pct{font-size:13px;font-weight:700}
+.vtree-group-arrow{font-size:10px;color:#999;transition:transform .15s;flex-shrink:0}
+.vtree-group-arrow.open{transform:rotate(90deg)}
+/* 树形连接线 */
+.vtree-tree-line{position:absolute;top:0;bottom:0;width:1px;background:#e0d6cc}
+.vtree-group-hd[data-depth="0"] .vtree-tree-line{display:none}
+/* 股票行（padding-left 由 JS 按 depth 动态设置） */
+.vtree-stocks{}
+.vtree-stock-row{display:flex;align-items:flex-start;padding:7px 14px;border-bottom:1px solid #f8f8f8;gap:8px}
+.vtree-stock-row:last-child{border-bottom:none}
+.vtree-stock-name{font-size:13px;font-weight:600;color:#1a1a1a;flex:1;min-width:0;word-break:break-all;line-height:1.4}
+.vtree-stock-code{font-size:11px;color:#bbb;flex-shrink:0;white-space:nowrap}
+.vtree-stock-reason{font-size:12px;color:#555;flex:2;line-height:1.5;min-width:0}
+.vtree-stock-pct{font-size:13px;font-weight:700;flex-shrink:0;text-align:right;white-space:nowrap;min-width:52px}
+.vtree-nodata{padding:40px;text-align:center;color:#ccc;font-size:13px}
+
+/* ===== 领涨股标签 ===== */
+.lead-bar{display:flex;gap:4px;flex-wrap:wrap;padding:4px 14px 8px;background:#fff}
+.lead-tag{font-size:11px;padding:2px 7px;border-radius:4px;background:#fff0f0;color:#e53935;font-weight:600;cursor:default}
+.lead-tag.dn{background:#f0faf8;color:#26a69a}
+
+/* ===== 关联题材列表 ===== */
+.subj-list{display:flex;flex-direction:column;gap:6px;padding:10px 16px 16px;background:#fff}
+.subj-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f7f9ff;border-radius:8px;border:1px solid #e0eaff;font-size:13px}
+.subj-item-name{color:#1a1a1a;font-weight:500;flex:1;margin-right:8px}
+.subj-item-pct{font-weight:700;flex-shrink:0}
+
+/* ===== 题材轮动 Tab ===== */
+.cycle-wrap{overflow:auto;height:calc(100vh - 90px);background:#fff}
+.cycle-table{border-collapse:collapse;min-width:100%;font-size:12px}
+.cycle-table th{position:sticky;top:0;background:#fafafa;border:1px solid #eee;padding:6px 8px;text-align:center;white-space:nowrap;color:#666;font-weight:600;z-index:2;min-width:72px}
+.cycle-table th:first-child{position:sticky;left:0;z-index:3;background:#fafafa;min-width:36px}
+.cycle-table td{border:1px solid #f0f0f0;padding:6px 8px;vertical-align:top;white-space:nowrap}
+.cycle-table td:first-child{position:sticky;left:0;background:#fafafa;text-align:center;color:#aaa;font-size:11px;font-weight:600;z-index:1;border-right:2px solid #eee}
+.cycle-cell{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
+.cycle-cell-name{font-size:12px;font-weight:600;color:#1a1a1a;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cycle-cell-cnt{font-size:11px;color:#e53935;font-weight:700}
+.cycle-cell-pct{font-size:10px;color:#aaa}
+.cycle-loading{padding:40px;text-align:center;color:#ccc;font-size:13px}
+/* 行交替色 */
+.cycle-table tr:nth-child(even) td{background:#fafcff}
+.cycle-table tr:nth-child(even) td:first-child{background:#f5f5f5}
+
+/* ===== 研报分析 Tab v2（ZSXQ 风格）===== */
+.ime-wrap{height:calc(100vh - 90px);overflow:hidden;display:flex;flex-direction:column}
+#imeBody{flex:1;min-height:0;overflow:hidden}
+/* 根容器 */
+.ime2-root{display:flex;flex-direction:column;height:100%;background:#f5f6f7;overflow:hidden}
+/* 分类 Tabs 栏 */
+.ime2-tabs-bar{display:flex;align-items:center;background:#fff;border-bottom:2px solid #f0f0f0;padding:0 12px;flex-shrink:0;min-height:42px}
+.ime2-tabs{display:flex;align-items:stretch;flex:1;overflow-x:auto;gap:0;scrollbar-width:none;-ms-overflow-style:none}
+.ime2-tabs::-webkit-scrollbar{display:none}
+.ime2-tab{padding:11px 15px;font-size:13px;color:#666;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-2px;flex-shrink:0;transition:color .15s,border-color .15s;user-select:none}
+.ime2-tab:hover{color:#e53935}
+.ime2-tab.active{color:#e53935;border-bottom-color:#e53935;font-weight:600}
+.ime2-search-wrap{flex-shrink:0;padding-left:10px}
+.ime2-search{padding:5px 12px;font-size:12px;border:1px solid #e0e0e0;border-radius:16px;outline:none;width:150px;color:#333}
+.ime2-search:focus{border-color:#e53935}
+/* 主体：Feed + 解读 */
+.ime2-body{display:flex;flex:1;min-height:0;overflow:hidden}
+/* Feed 左栏 */
+.ime2-feed{flex:1;min-width:0;overflow-y:auto;border-right:1px solid #e8e8e8;background:#fff}
+.ime2-count{padding:7px 14px 5px;font-size:11px;color:#bbb;border-bottom:1px solid #f5f5f5}
+.ime2-hint{padding:40px;text-align:center;color:#bbb;font-size:13px}
+/* 卡片通用 */
+.ime2-card{padding:11px 14px;border-bottom:1px solid #f2f2f2;transition:background .1s;border-left:3px solid transparent}
+.ime2-card-meta{display:flex;align-items:center;gap:5px;margin-bottom:5px;flex-wrap:wrap}
+.ime2-cat-tag{font-size:10px;padding:1px 6px;border-radius:3px;background:#fff0f0;color:#e53935;font-weight:700;flex-shrink:0}
+.ime2-ht-tag{font-size:10px;padding:1px 6px;border-radius:3px;background:#e3f2fd;color:#1565c0;font-weight:700;flex-shrink:0}
+.ime2-ctype{font-size:10px;padding:1px 5px;border-radius:3px;background:#f0f0f0;color:#999}
+.ime2-ctype-post{background:#e8f5e9;color:#2e7d32}
+.ime2-card-dt{font-size:10px;color:#bbb;margin-left:auto;flex-shrink:0}
+.ime2-card-author{font-size:11px;color:#aaa}
+.ime2-card-title{font-size:13px;color:#1a1a1a;font-weight:500;line-height:1.4;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ime2-card-summ{font-size:12px;color:#555;line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ime2-card-act{font-size:12px;color:#c62828;font-weight:600;margin-top:3px}
+.ime2-card-body{font-size:12px;color:#666;line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.ime2-img-badge{font-size:10px;color:#888;margin-top:4px}
+/* 研报卡（可点击）*/
+.ime2-rc{cursor:pointer}
+.ime2-rc:hover{background:#fef5f5}
+.ime2-rc-sel{background:#fff0f0 !important;border-left-color:#e53935}
+/* 帖子卡 */
+.ime2-pc{border-left-color:#e3f2fd}
+/* 翻页 */
+.ime2-pager{display:flex;align-items:center;justify-content:center;gap:10px;padding:10px;border-top:1px solid #f0f0f0}
+.ime2-pg-btn{font-size:12px;color:#1565c0;cursor:pointer;padding:3px 10px;border-radius:4px;border:1px solid #c5cae9;user-select:none}
+.ime2-pg-btn:hover{background:#e8eaf6}
+.ime2-pg-cur{font-size:12px;color:#999}
+/* 解读面板 右栏 */
+.ime2-reader{width:360px;flex-shrink:0;overflow-y:auto;background:#fafafa;border-left:1px solid #f0f0f0}
+.ime2-reader-hint{display:flex;align-items:center;justify-content:center;height:100%;color:#ccc;font-size:13px;text-align:center;padding:20px;line-height:1.8}
+.ime2-ri{padding:16px 14px}
+.ime2-ri-hd{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.ime2-ri-dt{font-size:11px;color:#bbb;margin-left:auto}
+.ime2-ri-fn{font-size:14px;font-weight:600;color:#1a1a1a;line-height:1.4;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #eeeeee}
+.ime2-rs{margin-bottom:13px}
+.ime2-rl{display:inline-block;font-size:11px;font-weight:700;color:#fff;background:#999;border-radius:3px;padding:1px 7px;margin-bottom:5px}
+.ime2-rl-c{background:#f57c00}
+.ime2-rl-a{background:#c62828}
+.ime2-rt{font-size:12px;color:#333;line-height:1.75}
+.ime2-rt-a{color:#c62828;font-weight:600}
+/* 逻辑链 */
+.ime2-ci{padding:5px 0;border-bottom:1px solid #f0f0f0}
+.ime2-ci:last-child{border-bottom:none}
+.ime2-cm{font-size:12px;color:#333;line-height:1.5}
+.ime2-cc{font-size:11px;color:#888;margin-top:2px}
+/* 下载 */
+.ime2-dl{display:inline-block;margin-top:4px;padding:6px 16px;background:#e53935;color:#fff;border-radius:4px;text-decoration:none;font-size:12px;font-weight:600}
+.ime2-dl:hover{background:#c62828}
+.ime2-no-dl{font-size:11px;color:#bbb}
+/* 帖子图片缩略图 */
+.ime2-card-imgs{display:flex;gap:4px;margin-top:6px;overflow:hidden}
+.ime2-thumb{width:80px;height:60px;object-fit:cover;border-radius:4px;border:1px solid #eee;cursor:pointer}
+.ime2-thumb-more{display:flex;align-items:center;justify-content:center;width:40px;height:60px;background:#f5f5f5;border-radius:4px;font-size:11px;color:#999}
+/* 帖子卡片文件附件 */
+.ime2-card-files{margin-top:4px}
+.ime2-card-file{font-size:12px;color:#1976d2;padding:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ime2-cf-name{font-weight:500}
+.ime2-cf-size{color:#999;font-size:11px;margin-left:4px}
+/* 帖子卡片选中态 */
+.ime2-pc{cursor:pointer;transition:border-color .15s}
+.ime2-pc:hover{border-color:#1976d2}
+.ime2-pc.ime2-rc-sel{border-left:3px solid #1976d2;background:#f8fbff}
+/* 帖子详情面板 */
+.ime2-post-body{font-size:14px;line-height:1.7;color:#333;padding:12px 0;border-bottom:1px solid #f0f0f0;white-space:pre-wrap;word-break:break-word}
+.ime2-post-sec{padding:10px 0;border-bottom:1px solid #f0f0f0}
+.ime2-post-file{display:flex;align-items:center;gap:6px;padding:6px 8px;margin:4px 0;background:#f8f9fa;border-radius:4px;font-size:13px}
+.ime2-pf-icon{flex-shrink:0}
+.ime2-pf-name{flex:1;color:#333;font-weight:500;word-break:break-word}
+.ime2-pf-size{flex-shrink:0;color:#999;font-size:11px}
+.ime2-post-link{padding:4px 0}
+.ime2-post-link a{color:#1976d2;font-size:13px;word-break:break-all}
+.ime2-post-imgs{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ime2-post-img{max-width:100%;max-height:300px;border-radius:4px;border:1px solid #eee}
+.ime2-post-ocr{font-size:12px;color:#666;line-height:1.6;padding:8px;background:#fafafa;border-radius:4px;margin-top:4px}
+.ime2-post-stats{padding:8px 0;font-size:12px;color:#999}
+/* 来源机构标签 */
+.ime2-src-tag{display:inline-block;padding:1px 6px;border-radius:3px;color:#fff;font-size:10px;font-weight:700;margin-right:4px;letter-spacing:.5px;vertical-align:middle;line-height:16px}
+/* 英文副标题 */
+.ime2-card-sub{font-size:11px;color:#999;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-style:italic;margin-top:1px}
+.ime2-card-dt{font-size:12px!important;color:#e65100!important;font-weight:600;letter-spacing:.3px}
+.ime2-ri-dt{font-size:12px!important;color:#e65100!important;font-weight:600}
+.ime2-card-dl-icon{font-size:11px;flex-shrink:0}
+.ime2-ri-fn-sub{font-size:12px;color:#999;font-style:italic;margin:-10px 0 14px;padding-bottom:12px;border-bottom:1px solid #eee}
+/* key-value 子段 */
+.ime2-kv{display:flex;gap:6px;align-items:flex-start;margin-bottom:5px;padding:4px 0;border-bottom:1px dotted #f0f0f0}
+.ime2-kv:last-child{border-bottom:none}
+.ime2-kv-k{font-size:11px;color:#888;font-weight:600;flex-shrink:0;min-width:56px;padding-top:1px}
+.ime2-kv-v{font-size:12px;color:#333;line-height:1.65;flex:1}
+/* 标签颜色扩展 */
+.ime2-rl-b{background:#1565c0}
+.ime2-rl-r{background:#c62828}
+.ime2-rl-i{background:#6a1b9a}
+/* 逻辑链编号布局 */
+.ime2-ci{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #f0f0f0}
+.ime2-ci:last-child{border-bottom:none}
+.ime2-ci-no{width:20px;height:20px;border-radius:50%;background:#6a1b9a;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.ime2-ci-body{flex:1;min-width:0}
+.ime2-ci-d{font-size:12px;color:#555;margin-bottom:3px;font-weight:500}
+/* 下载行 */
+.ime2-dl-row{display:flex;gap:10px;align-items:center;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #eee}
+.ime2-dl-open{font-size:12px;color:#1565c0;text-decoration:none}
+.ime2-dl-open:hover{text-decoration:underline}

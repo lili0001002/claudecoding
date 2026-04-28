@@ -1,0 +1,25 @@
+[Unit]
+Description=久赢恒丰 Health Agent（自愈智能体）
+After=network.target jiuying-web.service
+Wants=jiuying-web.service
+# 若 health-agent 本身崩溃，通过 jiuying-alert.service 发出钉钉告警
+OnFailure=jiuying-alert@health-agent.service
+
+[Service]
+Type=simple
+User=libowei
+WorkingDirectory=/home/libowei/server/jiuying
+ExecStart=/home/libowei/server/venv/bin/python -m engine.agents.health_agent
+Restart=always
+RestartSec=30
+StartLimitIntervalSec=300
+StartLimitBurst=3
+StandardOutput=append:/home/libowei/server/jiuying/logs/health.log
+StandardError=append:/home/libowei/server/jiuying/logs/health.log
+Environment=HEALTH_TARGET_URL=http://127.0.0.1:8888
+Environment=HEALTH_SERVICE_NAME=jiuying-web
+Environment=HEALTH_CHECK_INTERVAL=60
+Environment=HEALTH_REPORT_HOUR=18
+
+[Install]
+WantedBy=multi-user.target

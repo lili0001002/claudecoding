@@ -1,0 +1,25 @@
+{
+  "project": "久赢恒丰",
+  "version": "1",
+  "machines": [
+    {"alias": "久赢Ubuntu", "host": "10.0.0.2", "protocol": "ssh", "user": "libowei"}
+  ],
+  "health_api":      "http://10.0.0.2:8888/api/mgr/health",
+  "local_stats_api": "http://10.0.0.2:8888/api/mgr/local-stats",
+  "tasks_api":       "http://10.0.0.2:8888/api/mgr/tasks",
+  "services": [
+    {"name": "jiuying-web",    "label": "久赢 Web服务",       "type": "systemd", "machine": "10.0.0.2"},
+    {"name": "jiuying-tunnel", "label": "Cloudflare Tunnel",  "type": "systemd", "machine": "10.0.0.2"},
+    {"name": "cron",           "label": "Cron 定时推送",       "type": "systemd", "machine": "10.0.0.2"}
+  ],
+  "log_files": [
+    {"label": "jiuying-web", "path": "logs/cron.log",         "machine": "10.0.0.2"},
+    {"label": "tunnel",      "path": "logs/cf_tunnel.log",    "machine": "10.0.0.2"},
+    {"label": "health",      "path": "logs/health.log",       "machine": "10.0.0.2"},
+    {"label": "cron",        "path": "logs/cron.log",         "machine": "10.0.0.2"}
+  ],
+  "deploy": {
+    "source_dir": "C:\\Users\\Administrator\\Desktop\\久赢恒丰",
+    "target":     "libowei@10.0.0.2:/home/libowei/server/jiuying"
+  }
+}
