@@ -346,6 +346,38 @@ def load_event_records_merged() -> list:
     return out
 
 
+def load_new_subject_records_merged() -> list:
+    """合并 result.json 与 kuake_events.json 的 type=2 新题材。
+
+    txcfgl hot 接口偶发返回 0 条时，kuake_events.json 仍然能拿到
+    当日新题材。这里作为页面兜底，避免「新题材」tab 断档。
+    """
+    out = []
+    seen = set()
+
+    def add_record(rec: dict):
+        if not isinstance(rec, dict) or rec.get("type") != 2:
+            return
+        sid = rec.get("subjectId") or rec.get("subjectName") or ""
+        day = str(rec.get("rankDate") or rec.get("createTime") or "")[:10]
+        key = (str(sid), day)
+        if key in seen:
+            return
+        seen.add(key)
+        out.append(rec)
+
+    try:
+        for r in load_data():
+            add_record(r)
+    except Exception:
+        pass
+    for r in load_kuake_events_for_tab(event_type=2):
+        add_record(r)
+
+    out.sort(key=lambda x: x.get("createTime") or x.get("rankDate") or "", reverse=True)
+    return out
+
+
 _subject_index_cache: dict | None = None
 _subject_index_mtime: float = 0.0
 
@@ -379,9 +411,21 @@ def _build_subject_index() -> dict:
 def lookup_subject_local(sub_id) -> dict:
     """txcfgl 401 时从 result.json 取 reason/detail 兜底。"""
     rec = _build_subject_index().get(str(sub_id)) or {}
+    reason = rec.get("reason") or ""
+    detail = rec.get("detail") or ""
+    if not (reason or detail):
+        try:
+            for ev in _load_kuake_events_raw():
+                if str(ev.get("subjectId", "")) == str(sub_id):
+                    desc = ev.get("description") or ""
+                    reason = ev.get("subjectName") or ""
+                    detail = desc
+                    break
+        except Exception:
+            pass
     return {
-        "reason": rec.get("reason") or "",
-        "detail": rec.get("detail") or "",
+        "reason": reason,
+        "detail": detail,
     }
 
 
@@ -413,11 +457,26 @@ def _build_subject_cycle_local(max_days=20, max_rows=50):
     the UI available without another network dependency.
     """
     try:
-        data = load_data()
+        data = list(load_data())
     except Exception:
         return []
     if not isinstance(data, list):
         return []
+    try:
+        existing_keys = {
+            (str(r.get("subjectId") or r.get("subjectName") or ""),
+             str(r.get("rankDate") or r.get("createTime") or "")[:10])
+            for r in data
+            if isinstance(r, dict)
+        }
+        for rec in load_new_subject_records_merged():
+            key = (str(rec.get("subjectId") or rec.get("subjectName") or ""),
+                   str(rec.get("rankDate") or rec.get("createTime") or "")[:10])
+            if key not in existing_keys:
+                data.append(rec)
+                existing_keys.add(key)
+    except Exception:
+        pass
 
     date_pat = re.compile(r"^\d{4}-\d{2}-\d{2}$")
     by_date = {}
@@ -592,7 +651,7 @@ def _render_cards(items, sort_by="pct"):
 def _render_tab_pane(data, tab_key):
     """渲染单个 tab 的内容 pane"""
     if tab_key == "new":
-        filtered = [(i, r) for i, r in enumerate(data) if r.get("type") == 2]
+        filtered = list(enumerate(load_new_subject_records_merged()))
     elif tab_key == "event":
         # 平台已限制 txcfgl 端事件源：历史 type=3 来自 result.json（2026-03-20 前），
         # 之后由 kuake_events.json 持续供给。两者合并按时间倒序展示。
@@ -1384,7 +1443,9 @@ class Handler(BaseHTTPRequestHandler):
             # 从 result.json 构建树：日期 → [新题材/驱动事件] → 题材节点(含stocks)
             from collections import OrderedDict
             date_map = OrderedDict()
-            for r in sorted(data, key=lambda x: x.get("rankDate",""), reverse=True):
+            tree_source = [r for r in data if r.get("type") != 2]
+            tree_source.extend(load_new_subject_records_merged())
+            for r in sorted(tree_source, key=lambda x: x.get("createTime") or x.get("rankDate",""), reverse=True):
                 d     = r.get("rankDate", "未知")
                 ttype = "新题材" if r.get("type") == 2 else "驱动事件"
                 date_map.setdefault(d, {"新题材": [], "驱动事件": []})

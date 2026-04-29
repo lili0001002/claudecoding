@@ -286,6 +286,48 @@ def get_fallback_stocks_from_kuake(subject_id):
     return list(_subject_stocks_index.get(subject_id) or [])
 
 
+def load_kuake_new_subject_fallback(today: str) -> list:
+    """txcfgl hot 为空时，从 kuake_events.json 兜底当日 type=2 新题材。"""
+    events_file = os.path.join(DATA_DIR, "kuake_events.json")
+    try:
+        with open(events_file, encoding="utf-8") as f:
+            rows = json.load(f) or []
+    except Exception:
+        return []
+
+    out = []
+    seen = set()
+    for ev in rows:
+        if ev.get("type") != 2:
+            continue
+        create_time = ev.get("createTime") or ""
+        if create_time[:10] != today:
+            continue
+        subject_id = ev.get("subjectId")
+        if not subject_id or subject_id in seen:
+            continue
+        seen.add(subject_id)
+
+        desc = ev.get("description") or ""
+        head = desc.lstrip()
+        end = head.find("】")
+        subject_name = head[:end + 1] if head.startswith("【") and end > 0 else (ev.get("subjectName") or "")
+        stocks = get_fallback_stocks_from_kuake(subject_id)
+        out.append({
+            "subjectId": subject_id,
+            "subjectName": subject_name or ev.get("subjectName") or f"topic_{subject_id}",
+            "rankDate": create_time[:10] or today,
+            "createTime": create_time,
+            "pctChg": ev.get("pctChg"),
+            "detail": desc,
+            "reason": ev.get("subjectName") or "",
+            "limitUpCount": None,
+            "stockCount": len(stocks),
+            "stocks": stocks,
+        })
+    return out
+
+
 
 
 # ===== 夸克补全（仅对新题材、有屏蔽股票时触发，使用拟人化间隔）=====
@@ -357,6 +399,11 @@ def run(pages=1, types=None, page_size=10, use_hot=True):
         print(f"[热门题材] 获取 {len(hot_rows)} 条")
         page_items = []
         ids_need_patch = []
+        fallback_rows = []
+        if not hot_rows:
+            fallback_rows = load_kuake_new_subject_fallback(today)
+            print(f"[热门题材] txcfgl 为空，kuake 新题材兜底 {len(fallback_rows)} 条")
+
         for item in hot_rows:
             subject_id   = item.get("subjectId") or item.get("id")
             subject_name = item.get("name") or item.get("subjectName", "")
@@ -374,6 +421,14 @@ def run(pages=1, types=None, page_size=10, use_hot=True):
                 ids_need_patch.append(subject_id)
 
             page_items.append((item, subject_id, rank_date, subject_name, stocks, key))
+
+        for rec in fallback_rows:
+            subject_id   = rec.get("subjectId")
+            subject_name = rec.get("subjectName", "")
+            rank_date    = rec.get("rankDate") or today
+            stocks       = rec.get("stocks") or []
+            key          = (subject_id, rank_date)
+            page_items.append((rec, subject_id, rank_date, subject_name, stocks, key))
 
         if ids_need_patch:
             _kuake_patch(ids_need_patch)
@@ -422,8 +477,8 @@ def run(pages=1, types=None, page_size=10, use_hot=True):
                 "rankDate":    rank_date,
                 "createTime":  item.get("createTime", ""),
                 "pctChg":      item.get("pctChg"),
-                "detail":      meta.get("detail", ""),
-                "reason":      meta.get("reason", ""),
+                "detail":      meta.get("detail") or item.get("detail", ""),
+                "reason":      meta.get("reason") or item.get("reason", ""),
                 "bizKey":      meta.get("bizKey", ""),
                 "limitUpCount":item.get("limitUpCount") or meta.get("limitUpCount"),
                 "stockCount":  item.get("stockCount")  or meta.get("stockCount"),
