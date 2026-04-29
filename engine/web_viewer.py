@@ -559,6 +559,99 @@ def _clean_subject_name(name):
     return s or name
 
 
+def _find_subject_record_local(sub_id) -> dict:
+    """Find the newest local subject record across result.json and kuake events."""
+    target = str(sub_id)
+    best = {}
+    candidates = []
+    try:
+        candidates.extend(load_new_subject_records_merged())
+    except Exception:
+        pass
+    try:
+        candidates.extend(load_data())
+    except Exception:
+        pass
+    try:
+        idx = _load_kuake_stocks_index()
+        for ev in _load_kuake_events_raw():
+            if str(ev.get("subjectId", "")) == target:
+                candidates.append(_kuake_event_to_record(ev, idx))
+    except Exception:
+        pass
+
+    for rec in candidates:
+        if not isinstance(rec, dict) or str(rec.get("subjectId", "")) != target:
+            continue
+        if not best:
+            best = rec
+            continue
+        if (rec.get("createTime") or rec.get("rankDate") or "") > (best.get("createTime") or best.get("rankDate") or ""):
+            best = rec
+    return best
+
+
+def _build_subject_child_tree_fallback(sub_id) -> list:
+    """Return a concept-note tree when real child-stock-tree is unavailable.
+
+    This deliberately does not invent constituent stocks. If no local stock
+    cache exists, the UI still shows the subject definition and data status.
+    """
+    rec = _find_subject_record_local(sub_id)
+    if not rec:
+        return []
+
+    name = _clean_subject_name(rec.get("subjectName") or rec.get("name") or "")
+    detail = (rec.get("detail") or rec.get("description") or "").strip()
+    reason = (rec.get("reason") or "").strip()
+
+    # Drop the bracket headline from the detail body; it is already the title.
+    body = detail
+    if body.startswith("【"):
+        end = body.find("】")
+        if end >= 0:
+            body = body[end + 1:].strip()
+
+    notes = []
+    if name:
+        notes.append({"title": "题材名称", "text": name})
+    if reason and reason != name:
+        notes.append({"title": "来源标签", "text": reason})
+    if body:
+        notes.append({"title": "题材说明", "text": body})
+
+    stocks = rec.get("stocks") if isinstance(rec.get("stocks"), list) else []
+    valid_stocks = []
+    for s in stocks:
+        sid_v = s.get("stockId") or ""
+        snm = s.get("stockName") or s.get("name") or ""
+        if not sid_v or sid_v == "111" or not snm or snm == "****":
+            continue
+        valid_stocks.append({
+            "stockId": sid_v,
+            "stockName": snm,
+            "reason": s.get("reason") or "",
+            "pctChg": s.get("pctChg"),
+            "importance": s.get("importance"),
+        })
+
+    result = []
+    if notes:
+        if not valid_stocks:
+            notes.append({
+                "title": "成分股状态",
+                "text": "上游成分股接口暂不可用，当前先展示题材定义；权限或缓存恢复后会自动补全成分股。",
+            })
+        result.append({"name": "题材逻辑", "pctChg": rec.get("pctChg"),
+                       "notes": notes, "stocks": [], "children": []})
+
+    if valid_stocks:
+        valid_stocks.sort(key=lambda x: -(x.get("importance") or 0))
+        result.append({"name": "本地成分股", "pctChg": None,
+                       "stocks": valid_stocks, "children": []})
+    return result
+
+
 def _render_stock_grid(stocks, detail=False):
     """渲染股票网格，行情占位等待JS异步填充"""
     sorted_s = sorted(stocks, key=lambda x: -(x.get("importance") or 0))
@@ -1741,8 +1834,12 @@ class Handler(BaseHTTPRequestHandler):
                                 stks.sort(key=lambda x: -((x.get("pctChg") or 0)))
                                 result.append({"name": gname, "pctChg": None,
                                                "stocks": stks, "children": []})
+                        if not result:
+                            result = _build_subject_child_tree_fallback(sub_id)
                 except Exception:
                     import traceback; traceback.print_exc()
+            if not result and sub_id:
+                result = _build_subject_child_tree_fallback(sub_id)
             body = json.dumps(result, ensure_ascii=False).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "application/json")

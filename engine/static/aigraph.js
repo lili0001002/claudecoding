@@ -987,6 +987,12 @@
     var rootPs  = rootPct != null ? ((rootPct>=0?'+':'')+rootPct.toFixed(2)+'%') : '';
     var rootCls = rootPct > 0 ? 'up' : rootPct < 0 ? 'dn' : 'flat';
     var _uid = 0;
+    function _treeEsc(s){
+      return (s == null ? '' : String(s))
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;');
+    }
 
     // 准备分组：支持任意深度
     var groups = childTree && childTree.length ? childTree : null;
@@ -1015,6 +1021,7 @@
         var uid  = 'vg'+(++_uid);
         var children = g.children || [];
         var stocks   = g.stocks   || [];
+        var notes    = g.notes    || [];
         var isLast   = gi === nodes.length - 1;
         html += '<div class="vtree-group" data-depth="'+depth+'">';
         // 分组标题行
@@ -1032,8 +1039,17 @@
         if(children.length){
           html += renderGroups(children, false, depth + 1);
         } else {
-          // 股票行
           var stockIndent = (hasSingleAnon ? 0 : (depth + 1)) * 20;
+          notes.forEach(function(n){
+            var title = n && typeof n === 'object' ? (n.title || '说明') : '说明';
+            var text  = n && typeof n === 'object' ? (n.text || '') : n;
+            if(!text) return;
+            html += '<div class="vtree-note-row" style="padding-left:'+(14+stockIndent)+'px">';
+            html += '<div class="vtree-note-title">'+_treeEsc(title)+'</div>';
+            html += '<div class="vtree-note-text">'+_treeEsc(text)+'</div>';
+            html += '</div>';
+          });
+          // 股票行
           stocks.forEach(function(s){
             var sid    = s.stockId || '';
             var sn     = s.stockName || s.name || '';
